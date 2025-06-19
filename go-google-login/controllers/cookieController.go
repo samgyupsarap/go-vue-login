@@ -40,8 +40,8 @@ func (c *CookieController) SetCookie(w http.ResponseWriter, jwt string, errorMes
 			Path:     "/",
 			Expires:  time.Now().Add(24 * time.Hour), // Cookie expires in 24 hours
 			Secure:   true,                           // Only sent over HTTPS
-			HttpOnly: true,                           // Not accessible via JavaScript
-			SameSite: http.SameSiteStrictMode,        // Strict same-site policy
+			HttpOnly: false,                          // Not accessible via JavaScript
+			SameSite: http.SameSiteNoneMode,          // Strict same-site policy
 		})
 		return
 	}
@@ -85,6 +85,29 @@ func (c *CookieController) GetCookie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+func GetCookieToken(r *http.Request) (string, error) {
+	// Derive the key from the JWT secret
+	secretKey := sha256.Sum256([]byte(os.Getenv("JWT_SECRET_KEY")))
+	// Retrieve the token cookie
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// No cookie found
+			return "", nil // No token available
+		}
+		// Other error retrieving cookie
+		return "", err
+	}
+	// Decrypt the token using the derived key
+	decryptedToken, err := DecryptToken(cookie.Value, secretKey[:])
+	if err != nil {
+		// Error decrypting token
+		return "", err
+	}
+	// Return the decrypted token
+	return decryptedToken, nil
+}
+
 // DeleteCookie removes the token and error cookies from the browser
 func (c *CookieController) DeleteCookie(w http.ResponseWriter, r *http.Request) {
 	// Delete the token cookie
@@ -94,9 +117,9 @@ func (c *CookieController) DeleteCookie(w http.ResponseWriter, r *http.Request) 
 		Path:     "/",
 		Expires:  time.Unix(0, 0), // Expire immediately
 		MaxAge:   -1,              // Ensure deletion
-		HttpOnly: true,            // HttpOnly for security
+		HttpOnly: false,           // HttpOnly for security
 		Secure:   false,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	// Delete the error cookie
@@ -106,9 +129,9 @@ func (c *CookieController) DeleteCookie(w http.ResponseWriter, r *http.Request) 
 		Path:     "/",
 		Expires:  time.Unix(0, 0), // Expire immediately
 		MaxAge:   -1,              // Ensure deletion
-		HttpOnly: false,           // Not HttpOnly
+		HttpOnly: false,           // HttpOnly for security
 		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 }
 

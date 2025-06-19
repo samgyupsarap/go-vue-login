@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"strings"
 
 )
 
@@ -13,9 +12,9 @@ type LogoutController struct{}
 func (l *LogoutController) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	var mySigningKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
-	tokenString := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	if tokenString == "" {
-		http.Error(w, "Invalid token format", http.StatusBadRequest)
+	tokenString, err := GetCookieToken(r)
+	if err != nil || tokenString == "" {
+		http.Error(w, "Unauthorized: No token provided", http.StatusUnauthorized)
 		return
 	}
 

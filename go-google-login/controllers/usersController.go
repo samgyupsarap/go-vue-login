@@ -7,7 +7,6 @@ import (
 	"go-google-login/utils"
 	"net/http"
 	"os"
-	"strings"
 )
 
 type User struct {
@@ -51,14 +50,11 @@ func (u *UserController) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 func (u *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	// Implementation for getting a user by ID
-	authHeader := r.Header.Get("Authorization")
-
-	if authHeader == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	tokenString, err := GetCookieToken(r)
+	if err != nil || tokenString == "" {
+		http.Error(w, "Unauthorized: No token provided", http.StatusUnauthorized)
 		return
 	}
-
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 	claims, err := utils.ValidateToken(tokenString, []byte(os.Getenv("JWT_SECRET_KEY")))
 	if err != nil {
