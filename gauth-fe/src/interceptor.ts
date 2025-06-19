@@ -21,6 +21,6 @@ console.log('Token:', token, typeof token)
   
 }
 
-if (window.location.pathname !== '/login') {
+if (window.location.pathname !== '/') {
   getToken()
 }

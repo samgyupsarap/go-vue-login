@@ -2,7 +2,6 @@ import RouterView from "@/views/RouterView.vue";
 import HomeView from "@/views/HomeView.vue";
 import UserView from "@/views/UserView.vue";
 import { createRouter, createWebHistory } from "vue-router";
-import axios from "axios";
 
 const CallbackResponse = () => import("../views/CallbackResponse.vue");
 const LoginView = () => import("../views/LoginView.vue");
@@ -43,18 +42,10 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    try {
-      const response = await axios.get('/get_cookie');
-      const token = response.data.token;
-      
-      if (token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${String(token)}`;
-        next();
-      } else {
-        next({ name: 'login' });
-      }
-    } catch (error) {
-      console.error('Authentication check failed:', error);
+    const auth = localStorage.getItem('isAuthorized');
+    if (auth !== null && auth === '1') {
+      next();
+    } else {
       next({ name: 'login' });
     }
   } else {

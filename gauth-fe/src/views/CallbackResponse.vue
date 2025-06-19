@@ -21,6 +21,7 @@ if (error) {
     .then((response: AxiosResponse) => {
       const token = response.data
       if (token) {
+        localStorage.setItem('isAuthorized', '1')
         router.push('/home')
       } else {
         console.error('No token found. Please log in again.')
