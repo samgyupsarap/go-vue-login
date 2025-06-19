@@ -19,7 +19,6 @@ func (mw *Middleware) BearerTokenAuth(next http.Handler) http.Handler {
 
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			log.Println("Authorization header is missing")
 			http.Error(w, "Authorization header missing", http.StatusUnauthorized)
 			return
 		}
@@ -30,8 +29,6 @@ func (mw *Middleware) BearerTokenAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Println("Authorization header:", authHeader)
-
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		decryptedToken, err := controllers.DecryptToken(tokenString, secretKey[:])
@@ -40,8 +37,6 @@ func (mw *Middleware) BearerTokenAuth(next http.Handler) http.Handler {
 			http.Error(w, "Failed to decrypt token", http.StatusUnauthorized)
 			return
 		}
-
-		log.Println("Decrypted token:", decryptedToken)
 
 		_, err = utils.ValidateToken(decryptedToken, mySigningKey)
 		if err != nil {
