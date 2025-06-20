@@ -66,6 +66,7 @@ import { onMounted } from "vue";
 import { toast } from "vue3-toastify";
 
 const loginWithGoogle = async () => {
+  localStorage.removeItem("isAuthorized");
   axios
     .post(`/delete_cookie`, {}, { withCredentials: true })
     .then(() => {

@@ -100,6 +100,7 @@ const handleLogout = () => {
     .then((response) => {
       if (response.status === 200) {
         console.log("Logged out successfully");
+        localStorage.removeItem("isAuthorized");
         sessionStorage.removeItem("homePageVisited");
         window.location.href = "/";
       } else {
